@@ -32,6 +32,7 @@ export interface AuthUser {
   email: string;
   role: Role;
   area?: string | null;
+  town?: string | null;
   latitude?: number | null;
   longitude?: number | null;
   isPremium?: boolean;
@@ -69,10 +70,12 @@ export interface Vehicle {
   plateNumber?: string;
   type: string;
   truckColor?: string;
+  town?: string | null;
+  description?: string | null;
   status: string;
   latitude?: number | null;
   longitude?: number | null;
-  driver?: { id: string; name: string; phone?: string | null };
+  driver?: { id: string; name: string; phone?: string | null; email?: string | null };
   locked?: boolean;
 }
 
@@ -85,8 +88,9 @@ export interface Schedule {
   vehicle?: { plateNumber: string; driver?: { name: string } } | null;
 }
 
-export type PaymentType = "UNLOCK_TRACKING" | "PREMIUM_MEMBERSHIP" | "SPECIAL_PICKUP";
+export type PaymentType = "UNLOCK_TRACKING" | "PREMIUM_MEMBERSHIP" | "SPECIAL_PICKUP" | "TOWN_CHANGE";
 export type Provider = "MTN" | "ORANGE";
+export const TOWN_CHANGE_FEE_XAF = 3000;
 
 export interface Payment {
   id: string;

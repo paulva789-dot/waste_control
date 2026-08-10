@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Truck, MessageSquareWarning, PackageCheck, Clock, Crown, Sparkles } from "lucide-react";
+import { Truck, MessageSquareWarning, PackageCheck, Clock, Crown, Sparkles, MapPin } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import StatCard from "@/components/StatCard";
 import StatusBadge from "@/components/StatusBadge";
 import LiveMapClient from "@/components/LiveMapClient";
+import TownChangeModal from "@/components/TownChangeModal";
 import { useAuth } from "@/lib/auth-context";
 import { api, PickupRequest, Vehicle, Complaint } from "@/lib/api";
 import { getSocket } from "@/lib/socket";
@@ -18,6 +19,7 @@ export default function DashboardPage() {
   const [pickups, setPickups] = useState<PickupRequest[]>([]);
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [showTownChange, setShowTownChange] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.push("/login");
@@ -65,7 +67,14 @@ export default function DashboardPage() {
         <div className="flex flex-wrap items-center justify-between gap-4 animate-fade-up">
           <div>
             <h1 className="text-2xl font-bold">Hi {user.name.split(" ")[0]}, welcome back</h1>
-            <p className="text-[var(--muted)] text-sm mt-1">{user.area || "No area set"}</p>
+            <button
+              onClick={() => setShowTownChange(true)}
+              className="text-[var(--muted)] text-sm mt-1 flex items-center gap-1.5 hover:text-brand-dark transition"
+            >
+              <MapPin size={13} />
+              {user.town || "No town set"} · {user.area || "No area set"}
+              <span className="text-brand-dark font-semibold underline decoration-dotted">change</span>
+            </button>
           </div>
           <Link
             href="/schedule"
@@ -86,7 +95,13 @@ export default function DashboardPage() {
         <div className="grid lg:grid-cols-5 gap-6">
           <div className="lg:col-span-3 card p-0 overflow-hidden h-[420px] animate-fade-up">
             {user.hasUnlockedTracking ? (
-              <LiveMapClient vehicles={vehicles} pickups={pickups} complaints={complaints} />
+              <LiveMapClient
+                vehicles={vehicles}
+                pickups={pickups}
+                complaints={complaints}
+                center={user.latitude && user.longitude ? [user.latitude, user.longitude] : undefined}
+                zoom={user.latitude && user.longitude ? 13 : undefined}
+              />
             ) : (
               <div className="h-full w-full flex flex-col items-center justify-center gap-3 text-center p-6">
                 <p className="text-sm text-[var(--muted)] max-w-xs">
@@ -140,6 +155,8 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
+
+      {showTownChange && <TownChangeModal currentTown={user.town} onClose={() => setShowTownChange(false)} />}
     </div>
   );
 }

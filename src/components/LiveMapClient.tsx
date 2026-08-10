@@ -17,6 +17,7 @@ export default function LiveMapClient(props: {
   pickups?: PickupRequest[];
   complaints?: Complaint[];
   center?: [number, number];
+  zoom?: number;
 }) {
   return <LiveMap {...props} />;
 }

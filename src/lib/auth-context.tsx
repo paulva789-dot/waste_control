@@ -9,7 +9,7 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (data: { name: string; email: string; password: string; role: string; area?: string }) => Promise<void>;
+  register: (data: { name: string; email: string; password: string; role: string; area?: string; town: string }) => Promise<void>;
   logout: () => void;
   updateSession: (token: string, user: AuthUser) => void;
 }
@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     routeByRole(res.data.user.role);
   }
 
-  async function register(data: { name: string; email: string; password: string; role: string; area?: string }) {
+  async function register(data: { name: string; email: string; password: string; role: string; area?: string; town: string }) {
     const res = await api.post("/auth/register", data);
     persist(res.data.token, res.data.user);
     routeByRole(res.data.user.role);

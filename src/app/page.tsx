@@ -44,6 +44,13 @@ const FEATURES = [
   },
 ];
 
+const SLOGANS = [
+  "Cleaner streets, one pickup at a time.",
+  "Track it. Report it. Fix it — together.",
+  "Your town, your waste, your problem — solved.",
+  "Smart waste. Smarter cities.",
+];
+
 const ROLES = [
   "Resident",
   "Local Waste Collector",
@@ -69,6 +76,9 @@ export default function Home() {
             <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight tracking-tight text-[var(--foreground)]">
               Cleaner cities, powered by <span className="text-brand">real-time data</span>
             </h1>
+            <p className="mt-3 text-brand-dark font-semibold italic animate-fade-up">
+              &ldquo;{SLOGANS[0]}&rdquo;
+            </p>
             <p className="mt-5 text-lg text-neutral-600 max-w-xl">
               One platform connecting residents, waste collectors, HYSACAM, and municipal councils —
               live vehicle tracking, pickup scheduling, complaint resolution, and analytics in a single dashboard.
@@ -129,6 +139,14 @@ export default function Home() {
               <h3 className="font-semibold text-lg">{title}</h3>
               <p className="mt-2 text-sm text-neutral-600">{desc}</p>
             </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="bg-brand-dark text-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 flex flex-wrap justify-center gap-x-10 gap-y-3 text-sm font-semibold italic stagger">
+          {SLOGANS.map((s) => (
+            <span key={s}>&ldquo;{s}&rdquo;</span>
           ))}
         </div>
       </section>

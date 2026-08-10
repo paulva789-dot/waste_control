@@ -25,19 +25,25 @@ const complaintIcon = new L.DivIcon({
   iconAnchor: [13, 13],
 });
 
+// Roughly centers and frames the whole of Cameroon at the default zoom.
+const CAMEROON_CENTER: [number, number] = [7.3697, 12.3547];
+const CAMEROON_ZOOM = 6;
+
 export default function LiveMap({
   vehicles = [],
   pickups = [],
   complaints = [],
-  center = [3.848, 11.502],
+  center = CAMEROON_CENTER,
+  zoom = CAMEROON_ZOOM,
 }: {
   vehicles?: Vehicle[];
   pickups?: PickupRequest[];
   complaints?: Complaint[];
   center?: [number, number];
+  zoom?: number;
 }) {
   return (
-    <MapContainer center={center} zoom={13} style={{ height: "100%", width: "100%" }}>
+    <MapContainer center={center} zoom={zoom} minZoom={5} maxZoom={18} scrollWheelZoom style={{ height: "100%", width: "100%" }}>
       <TileLayer
         attribution='&copy; OpenStreetMap contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

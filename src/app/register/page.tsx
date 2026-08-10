@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { UserPlus } from "lucide-react";
+import { UserPlus, MapPin } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/lib/auth-context";
+import { api } from "@/lib/api";
 
 const ROLES = [
   { value: "RESIDENT", label: "Resident" },
@@ -24,9 +25,18 @@ export default function RegisterPage() {
     password: "",
     role: "RESIDENT",
     area: "",
+    town: "",
   });
+  const [towns, setTowns] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    api.get("/towns").then((r) => {
+      setTowns(r.data);
+      setForm((f) => (f.town ? f : { ...f, town: r.data[0] }));
+    });
+  }, []);
 
   function update(key: string, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -54,6 +64,9 @@ export default function RegisterPage() {
             <UserPlus size={20} />
           </div>
           <h1 className="text-2xl font-bold">Create your account</h1>
+          <p className="text-sm text-brand-dark font-semibold mt-1 italic">
+            &ldquo;Your town, your waste, your problem&mdash;solved.&rdquo;
+          </p>
           <p className="text-sm text-[var(--muted)] mt-1">Join the CleanCity platform.</p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
@@ -96,6 +109,21 @@ export default function RegisterPage() {
                   </option>
                 ))}
               </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium flex items-center gap-1.5">
+                <MapPin size={14} className="text-brand" /> Town
+              </label>
+              <select value={form.town} onChange={(e) => update("town", e.target.value)} required className="input mt-1">
+                {towns.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-[var(--muted)] mt-1">
+                Changing your town later costs 3000 FCFA, so pick the right one now.
+              </p>
             </div>
             <div>
               <label className="text-sm font-medium">Area / Neighborhood</label>
