@@ -176,9 +176,12 @@ export default function AdminPage() {
               {complaints.map((c) => (
                 <div key={c.id} className="flex items-center justify-between border-b border-[var(--border-soft)] pb-3 last:border-0">
                   <div>
-                    <p className="font-medium text-sm">{c.type.replace(/_/g, " ")}</p>
+                    <p className="font-medium text-sm">
+                      {c.type.replace(/_/g, " ")}{" "}
+                      <span className="font-mono text-[10px] text-[var(--muted)] font-normal">#{c.reference}</span>
+                    </p>
                     <p className="text-xs text-[var(--muted)]">
-                      {c.reporter?.name} · {c.description}
+                      {c.reporter?.name || "Anonymous"} · {c.description}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">

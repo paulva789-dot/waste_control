@@ -3,15 +3,19 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Truck, MessageSquareWarning, PackageCheck, Clock, Crown, Sparkles, MapPin } from "lucide-react";
+import { Truck, MessageSquareWarning, PackageCheck, Clock, Crown, Sparkles, MapPin, ImageIcon } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import StatCard from "@/components/StatCard";
 import StatusBadge from "@/components/StatusBadge";
 import LiveMapClient from "@/components/LiveMapClient";
 import TownChangeModal from "@/components/TownChangeModal";
 import { useAuth } from "@/lib/auth-context";
-import { api, PickupRequest, Vehicle, Complaint } from "@/lib/api";
+import { api, PickupRequest, Vehicle, Complaint, resolveUploadUrl } from "@/lib/api";
 import { getSocket } from "@/lib/socket";
+
+function isOverduePickup(p: PickupRequest): boolean {
+  return !!p.scheduledFor && !["COMPLETED", "CANCELLED"].includes(p.status) && new Date(p.scheduledFor).getTime() < Date.now();
+}
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -118,18 +122,39 @@ export default function DashboardPage() {
             <h2 className="font-semibold mb-4">My pickup requests</h2>
             <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
               {pickups.length === 0 && <p className="text-sm text-[var(--muted)]">No pickup requests yet.</p>}
-              {pickups.map((p) => (
-                <div key={p.id} className="flex items-center justify-between border-b border-[var(--border-soft)] pb-3 last:border-0">
-                  <div>
-                    <p className="font-medium text-sm">{p.wasteType}</p>
-                    <p className="text-xs text-[var(--muted)]">{p.address}</p>
-                    {p.priceXAF != null && (
-                      <p className="text-xs text-brand-dark font-semibold mt-0.5">{p.priceXAF} XAF</p>
+              {pickups.map((p) => {
+                const overdue = isOverduePickup(p);
+                return (
+                  <div key={p.id} className="border-b border-[var(--border-soft)] pb-3 last:border-0">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="font-medium text-sm">{p.wasteType}</p>
+                        <p className="text-xs text-[var(--muted)]">{p.address}</p>
+                        {p.scheduledFor && (
+                          <p className={`text-xs mt-0.5 ${overdue ? "text-red-600 font-semibold" : "text-[var(--muted)]"}`}>
+                            {overdue ? "Overdue — " : "Expected "}
+                            {new Date(p.scheduledFor).toLocaleString(undefined, { weekday: "short", hour: "2-digit", minute: "2-digit" })}
+                          </p>
+                        )}
+                        {p.priceXAF != null && (
+                          <p className="text-xs text-brand-dark font-semibold mt-0.5">{p.priceXAF} XAF</p>
+                        )}
+                      </div>
+                      <StatusBadge status={p.status} />
+                    </div>
+                    {p.completionPhotoUrl && (
+                      <a
+                        href={resolveUploadUrl(p.completionPhotoUrl) || "#"}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-2 inline-flex items-center gap-1.5 text-xs text-brand-dark font-semibold hover:underline"
+                      >
+                        <ImageIcon size={12} /> View proof of pickup
+                      </a>
                     )}
                   </div>
-                  <StatusBadge status={p.status} />
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

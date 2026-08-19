@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { MessageSquareWarning, Phone } from "lucide-react";
+import Link from "next/link";
+import { MessageSquareWarning, Phone, ArrowRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
@@ -36,7 +37,7 @@ export default function ComplaintsPage() {
   const { user } = useAuth();
   const [form, setForm] = useState({ type: "ILLEGAL_DUMPING", description: "", reporterPhone: "" });
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
+  const [submitted, setSubmitted] = useState<{ id: string; reference: string } | null>(null);
   const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
@@ -47,8 +48,8 @@ export default function ComplaintsPage() {
       const { latitude, longitude } = await getLocation(user || {});
       const payload: Record<string, unknown> = { type: form.type, description: form.description, latitude, longitude };
       if (!user) payload.reporterPhone = form.reporterPhone;
-      await api.post("/complaints", payload);
-      setDone(true);
+      const { data } = await api.post("/complaints", payload);
+      setSubmitted({ id: data.id, reference: data.reference });
       setForm({ type: "ILLEGAL_DUMPING", description: "", reporterPhone: "" });
     } catch (err: any) {
       setError(err?.response?.data?.error || "Could not submit report. Please try again.");
@@ -70,9 +71,18 @@ export default function ComplaintsPage() {
         </p>
 
         <div className="card p-6 mt-6">
-          {done && (
-            <div className="mb-4 rounded-lg bg-brand-light text-brand-dark text-sm p-3">
-              Thanks — your report has been submitted and the council has been notified.
+          {submitted && (
+            <div className="mb-4 rounded-lg bg-brand-light text-brand-dark text-sm p-4">
+              <p>Thanks — your report has been submitted and the council has been notified.</p>
+              <p className="mt-2 font-semibold">
+                Reference: <span className="font-mono">{submitted.reference}</span>
+              </p>
+              <Link
+                href={`/track/${submitted.id}`}
+                className="mt-2 inline-flex items-center gap-1 font-semibold hover:underline"
+              >
+                Track this report <ArrowRight size={13} />
+              </Link>
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-4">

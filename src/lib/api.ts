@@ -6,6 +6,13 @@ export const api = axios.create({
   baseURL: `${API_URL}/api`,
 });
 
+// Proof-of-service photos are served from the backend's own /uploads path
+// (self-hosted, no external storage dependency) — resolve them to an absolute URL.
+export function resolveUploadUrl(path?: string | null) {
+  if (!path) return null;
+  return `${API_URL}${path}`;
+}
+
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("dwms_token");
@@ -49,14 +56,27 @@ export interface PickupRequest {
   longitude: number;
   status: "PENDING" | "SCHEDULED" | "IN_PROGRESS" | "COMPLETED" | "MISSED" | "CANCELLED";
   createdAt: string;
+  scheduledFor?: string | null;
+  completedAt?: string | null;
   isSpecial?: boolean;
   priceXAF?: number | null;
   resident?: { id: string; name: string; area?: string | null };
   collector?: { id: string; name: string } | null;
+  // Proof of service, captured when the collector marks the pickup complete.
+  completionPhotoUrl?: string | null;
+  completionLatitude?: number | null;
+  completionLongitude?: number | null;
+  binCount?: number | null;
+}
+
+export interface ComplaintTimelineEvent {
+  status: string;
+  at: string;
 }
 
 export interface Complaint {
   id: string;
+  reference?: string;
   type: string;
   description: string;
   status: "OPEN" | "IN_REVIEW" | "RESOLVED" | "REJECTED";
@@ -64,6 +84,16 @@ export interface Complaint {
   latitude?: number | null;
   longitude?: number | null;
   reporter?: { id: string; name: string };
+}
+
+export interface ComplaintTracking {
+  reference: string;
+  type: string;
+  description: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  timeline: ComplaintTimelineEvent[];
 }
 
 export interface Vehicle {
