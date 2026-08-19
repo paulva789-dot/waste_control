@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import {
   Truck,
@@ -7,62 +10,144 @@ import {
   BellRing,
   ShieldCheck,
   Recycle,
+  CheckCircle2,
+  ClipboardList,
+  Route,
   Users,
+  Landmark,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import StatusBadge from "@/components/StatusBadge";
+
+const TAGLINE = "Track it. Report it. Fix it — together.";
 
 const FEATURES = [
   {
     icon: Truck,
     title: "Live GPS Tracking",
-    desc: "Track HYSACAM and collector vehicles in real time on an interactive map, powered by Socket.IO.",
+    desc: "Know when the truck is 4 minutes away, live on the map — no more guessing when to put your bin out.",
   },
   {
     icon: MapPinned,
     title: "Smart Pickup Requests",
-    desc: "Residents request pickups with precise geolocation; councils assign vehicles and schedules instantly.",
+    desc: "Request a pickup with your exact location attached — the council assigns a collector in one tap.",
   },
   {
     icon: MessageSquareWarning,
     title: "Complaint Reporting",
-    desc: "Report illegal dumping, missed pickups, or overflowing bins with photos and GPS coordinates.",
+    desc: "Report illegal dumping or a missed pickup with a photo and GPS location — no account required.",
   },
   {
     icon: BarChart3,
     title: "Analytics & Reporting",
-    desc: "Track collection efficiency, missed pickups, recycling rates, and area cleanliness scores.",
+    desc: "Councils see collection efficiency, missed pickups and recycling rates at a glance, not in a spreadsheet.",
   },
   {
     icon: BellRing,
     title: "Real-time Notifications",
-    desc: "Automatic alerts for pickup reminders, arriving collectors, and complaint status updates.",
+    desc: "Get notified the moment your pickup is scheduled, on the way, or completed.",
   },
   {
     icon: ShieldCheck,
     title: "Role-Based Access",
-    desc: "Dedicated experiences for residents, collectors, HYSACAM staff, councils, and inspectors.",
+    desc: "Residents, collectors, HYSACAM staff and council admins each see exactly what they need — nothing else.",
   },
 ];
 
-const SLOGANS = [
-  "Cleaner streets, one pickup at a time.",
-  "Track it. Report it. Fix it — together.",
-  "Your town, your waste, your problem — solved.",
-  "Smart waste. Smarter cities.",
+const HOW_IT_WORKS = [
+  {
+    icon: MapPinned,
+    title: "Request or report",
+    desc: "Create a pickup request or report a problem — your exact location is attached automatically.",
+  },
+  {
+    icon: Truck,
+    title: "A vehicle gets assigned",
+    desc: "The council or HYSACAM schedules a collector and dispatches them to your zone.",
+  },
+  {
+    icon: CheckCircle2,
+    title: "Track it to completion",
+    desc: "Watch it arrive live on the map, then see it marked complete — no wondering if it happened.",
+  },
 ];
 
-const ROLES = [
-  "Resident",
-  "Local Waste Collector",
-  "HYSACAM Driver",
-  "HYSACAM Supervisor",
-  "Municipal Council Admin",
-  "Recycling Company",
-  "Environmental Inspector",
-  "System Administrator",
+const AUDIENCES = [
+  {
+    id: "resident",
+    label: "Residents",
+    icon: Users,
+    benefits: [
+      "Report dumping, missed pickups or bin problems — no account needed",
+      "See the weekly collection schedule for free, always",
+      "Track your collector live on the map once unlocked",
+    ],
+    cta: { label: "Get started free", href: "/register" },
+  },
+  {
+    id: "field",
+    label: "Collectors & drivers",
+    icon: Route,
+    benefits: [
+      "Today's assigned pickups in one ordered list",
+      "Update status with one tap — start, complete, or flag as missed",
+      "Your location shows live to your supervisor while a job is active",
+    ],
+    cta: { label: "Ask your admin for an account", href: "/about" },
+  },
+  {
+    id: "council",
+    label: "Councils & HYSACAM",
+    icon: Landmark,
+    benefits: [
+      "One map showing every vehicle, pending pickup and open complaint",
+      "Assign a collector to a pending pickup in a couple of clicks",
+      "Analytics on collection efficiency, recycling and complaint resolution",
+    ],
+    cta: { label: "Talk to us", href: "/pricing" },
+  },
+];
+
+const FAQS = [
+  {
+    q: "Is CleanCity free?",
+    a: "Yes, for residents. Reporting, the weekly collection schedule and standard pickup requests are free. Live vehicle tracking and on-demand pickups are optional paid add-ons. Businesses and councils pay for the operations tools they use — see the pricing page.",
+  },
+  {
+    q: "Do I need an account to report a problem?",
+    a: "No. You can report illegal dumping, a missed pickup or a damaged bin without creating an account — just leave a phone number so we can send you status updates.",
+  },
+  {
+    q: "Who can see my location?",
+    a: "Only the coordinates you attach to a specific pickup or complaint are shared, with the collector or council handling it. We don't sell or share individual location data.",
+  },
+  {
+    q: "How do collectors and council staff get access?",
+    a: "Staff accounts (collector, driver, supervisor, council admin, inspector) are created by an existing administrator, not self-registered — this keeps privileged roles out of public sign-up.",
+  },
+  {
+    q: "What happens if a pickup is missed?",
+    a: "It's marked missed on your dashboard and you get a notification. You can report it as a complaint to flag it to the council directly.",
+  },
+  {
+    q: "Which areas does this cover?",
+    a: "The platform supports any town or commune that's been set up with a collection schedule and vehicles — check with your local council about coverage in your area.",
+  },
+  {
+    q: "How do I pay for premium features?",
+    a: "Via Mobile Money (MTN or Orange), confirmed directly in the app.",
+  },
+  {
+    q: "Can my business get a compliance record of pickups?",
+    a: "That's part of the business waste plans — see the pricing page for what's included at each tier.",
+  },
 ];
 
 export default function Home() {
+  const [audience, setAudience] = useState(AUDIENCES[0].id);
+  const active = AUDIENCES.find((a) => a.id === audience)!;
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -71,14 +156,12 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-20 sm:py-28 grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <span className="badge bg-white text-brand-dark border border-brand/20 mb-5">
-              <Recycle size={14} /> Digital Waste Management System
+              <Recycle size={14} /> Waste management platform
             </span>
             <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight tracking-tight text-[var(--foreground)]">
-              Cleaner cities, powered by <span className="text-brand">real-time data</span>
+              Know exactly when your <span className="text-brand">waste gets collected</span>
             </h1>
-            <p className="mt-3 text-brand-dark font-semibold italic animate-fade-up">
-              &ldquo;{SLOGANS[0]}&rdquo;
-            </p>
+            <p className="mt-3 text-brand-dark font-semibold italic">&ldquo;{TAGLINE}&rdquo;</p>
             <p className="mt-5 text-lg text-neutral-600 max-w-xl">
               One platform connecting residents, waste collectors, HYSACAM, and municipal councils —
               live vehicle tracking, pickup scheduling, complaint resolution, and analytics in a single dashboard.
@@ -88,12 +171,12 @@ export default function Home() {
                 Get started free
               </Link>
               <Link href="/login" className="btn-secondary text-base px-6 py-3">
-                Log in
+                See a live demo
               </Link>
             </div>
             <div className="mt-10 flex items-center gap-6 text-sm text-[var(--muted)]">
               <div className="flex items-center gap-2">
-                <Users size={16} className="text-brand" /> 8 user roles supported
+                <Users size={16} className="text-brand" /> Built for residents, collectors &amp; councils
               </div>
               <div className="flex items-center gap-2">
                 <MapPinned size={16} className="text-brand" /> Live GPS tracking
@@ -101,24 +184,90 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Honest in-app preview — built from the same live components as the product, not a stock photo. */}
           <div className="card p-3 shadow-xl">
-            <div className="rounded-xl overflow-hidden bg-neutral-900 aspect-[4/3] flex items-center justify-center relative">
-              <img
-                src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&w=900&q=60"
-                alt="Waste collection truck on a city street"
-                className="absolute inset-0 h-full w-full object-cover opacity-80"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-              <div className="absolute bottom-4 left-4 right-4 card bg-white/95 p-3 flex items-center gap-3">
-                <span className="p-2 rounded-lg bg-brand-light text-brand-dark">
-                  <Truck size={18} />
+            <div className="rounded-xl bg-neutral-900 p-5 space-y-3">
+              <div className="flex items-center justify-between text-white/60 text-xs font-medium px-1">
+                <span>Next pickup</span>
+                <span>Bastos, Yaoundé</span>
+              </div>
+              <div className="rounded-lg bg-white p-4 flex items-center gap-3">
+                <span className="p-2.5 rounded-lg bg-brand-light text-brand-dark shrink-0">
+                  <Truck size={20} />
                 </span>
-                <div className="text-sm">
-                  <p className="font-semibold">CE-4521-YA en route</p>
-                  <p className="text-[var(--muted)]">Bastos collection zone · 4 min away</p>
+                <div className="text-sm flex-1 min-w-0">
+                  <p className="font-semibold">Collector en route</p>
+                  <p className="text-[var(--muted)]">4 min away · General waste</p>
                 </div>
+                <StatusBadge status="IN_PROGRESS" />
+              </div>
+              <div className="rounded-lg bg-white/95 p-3 flex items-center justify-between text-sm">
+                <span className="flex items-center gap-2 text-[var(--muted)]">
+                  <ClipboardList size={15} /> Last pickup
+                </span>
+                <StatusBadge status="COMPLETED" />
+              </div>
+              <div className="rounded-lg bg-white/95 p-3 flex items-center justify-between text-sm">
+                <span className="flex items-center gap-2 text-[var(--muted)]">
+                  <MessageSquareWarning size={15} /> Open report
+                </span>
+                <StatusBadge status="IN_REVIEW" />
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-4xl px-4 sm:px-6 py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-2xl sm:text-3xl font-bold">How it works</h2>
+        </div>
+        <div className="grid sm:grid-cols-3 gap-6">
+          {HOW_IT_WORKS.map(({ icon: Icon, title, desc }, i) => (
+            <div key={title} className="text-center">
+              <div className="w-12 h-12 rounded-full bg-brand text-white flex items-center justify-center mx-auto mb-4 font-bold">
+                {i + 1}
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-brand-light text-brand-dark flex items-center justify-center mx-auto mb-3">
+                <Icon size={20} />
+              </div>
+              <h3 className="font-semibold">{title}</h3>
+              <p className="mt-1.5 text-sm text-neutral-600">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="bg-neutral-50 py-16">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold">Built for every side of the system</h2>
+          </div>
+          <div className="flex justify-center gap-2 mb-8 flex-wrap">
+            {AUDIENCES.map((a) => (
+              <button
+                key={a.id}
+                onClick={() => setAudience(a.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition ${
+                  audience === a.id ? "bg-brand text-white" : "bg-white text-neutral-600 border border-neutral-200"
+                }`}
+              >
+                <a.icon size={15} /> {a.label}
+              </button>
+            ))}
+          </div>
+          <div className="card p-8 max-w-2xl mx-auto animate-fade-up" key={active.id}>
+            <ul className="space-y-3">
+              {active.benefits.map((b) => (
+                <li key={b} className="flex items-start gap-3 text-sm">
+                  <CheckCircle2 size={17} className="text-brand mt-0.5 shrink-0" />
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+            <Link href={active.cta.href} className="btn-primary inline-block mt-6 text-sm">
+              {active.cta.label}
+            </Link>
           </div>
         </div>
       </section>
@@ -144,33 +293,34 @@ export default function Home() {
       </section>
 
       <section className="bg-brand-dark text-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 flex flex-wrap justify-center gap-x-10 gap-y-3 text-sm font-semibold italic stagger">
-          {SLOGANS.map((s) => (
-            <span key={s}>&ldquo;{s}&rdquo;</span>
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 py-14 text-center">
+          <h2 className="text-2xl font-bold">Free for residents. Priced for the people with budgets.</h2>
+          <p className="mt-3 text-white/80">
+            Businesses get scheduled pickups and compliance records. Councils and HYSACAM get the full
+            operations platform.
+          </p>
+          <Link href="/pricing" className="btn-primary inline-block mt-6 bg-white text-brand-dark hover:bg-white/90">
+            See pricing
+          </Link>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-3xl px-4 sm:px-6 py-20">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-10">Frequently asked questions</h2>
+        <div className="space-y-3">
+          {FAQS.map(({ q, a }) => (
+            <details key={q} className="card p-5 group">
+              <summary className="font-semibold cursor-pointer list-none flex items-center justify-between gap-4">
+                {q}
+                <span className="text-brand shrink-0 transition group-open:rotate-45 text-xl leading-none">+</span>
+              </summary>
+              <p className="mt-3 text-sm text-neutral-600">{a}</p>
+            </details>
           ))}
         </div>
       </section>
 
-      <section className="bg-neutral-900 text-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
-          <h2 className="text-2xl font-bold mb-8">Built for every role in the system</h2>
-          <div className="flex flex-wrap gap-3">
-            {ROLES.map((role) => (
-              <span
-                key={role}
-                className="badge bg-white/10 text-white border border-white/10 px-4 py-2 text-sm"
-              >
-                {role}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <footer className="mx-auto max-w-7xl px-4 sm:px-6 py-10 text-sm text-[var(--muted)] flex flex-col sm:flex-row justify-between gap-3">
-        <p>© {new Date().getFullYear()} CleanCity DWMS. Built for cleaner, smarter cities.</p>
-        <p>Next.js · Express · PostgreSQL · Flutter</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

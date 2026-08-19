@@ -7,14 +7,12 @@ import Navbar from "@/components/Navbar";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 
+// Public sign-up is limited to non-privileged roles. Staff accounts
+// (collectors, drivers, supervisors, council admins, inspectors) are created
+// by an existing admin from the admin dashboard, not self-registered here.
 const ROLES = [
   { value: "RESIDENT", label: "Resident" },
-  { value: "COLLECTOR", label: "Local Waste Collector" },
-  { value: "HYSACAM_DRIVER", label: "HYSACAM Driver" },
-  { value: "HYSACAM_SUPERVISOR", label: "HYSACAM Supervisor" },
-  { value: "COUNCIL_ADMIN", label: "Municipal Council Administrator" },
-  { value: "RECYCLING_COMPANY", label: "Recycling Company" },
-  { value: "INSPECTOR", label: "Environmental Inspector" },
+  { value: "RECYCLING_COMPANY", label: "Business / Recycling Company" },
 ];
 
 export default function RegisterPage() {
@@ -122,7 +120,7 @@ export default function RegisterPage() {
                 ))}
               </select>
               <p className="text-xs text-[var(--muted)] mt-1">
-                Changing your town later costs 3000 FCFA, so pick the right one now.
+                You can update your town for free later from your profile.
               </p>
             </div>
             <div>

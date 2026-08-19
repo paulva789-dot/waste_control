@@ -2,16 +2,23 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LogIn } from "lucide-react";
+import { LogIn, User, Truck, Building2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/lib/auth-context";
 
+const DEMO_PERSONAS: { id: "RESIDENT" | "DRIVER" | "COUNCIL"; label: string; icon: typeof User }[] = [
+  { id: "RESIDENT", label: "Resident", icon: User },
+  { id: "DRIVER", label: "Driver", icon: Truck },
+  { id: "COUNCIL", label: "Council", icon: Building2 },
+];
+
 export default function LoginPage() {
-  const { login } = useAuth();
-  const [email, setEmail] = useState("resident@dwms.cm");
-  const [password, setPassword] = useState("password123");
+  const { login, demoLogin } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -23,6 +30,18 @@ export default function LoginPage() {
       setError(err?.response?.data?.error || "Invalid credentials");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleDemo(persona: "RESIDENT" | "DRIVER" | "COUNCIL") {
+    setError(null);
+    setDemoLoading(persona);
+    try {
+      await demoLogin(persona);
+    } catch (err: any) {
+      setError(err?.response?.data?.error || "Demo login unavailable");
+    } finally {
+      setDemoLoading(null);
     }
   }
 
@@ -64,9 +83,26 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-xs text-[var(--muted)] bg-[var(--background)] border border-[var(--border-soft)] rounded-lg p-3">
-            <p className="font-semibold mb-1">Demo accounts (password: password123)</p>
-            <p>resident@dwms.cm · admin@dwms.cm · supervisor@hysacam.cm · driver@hysacam.cm</p>
+          <div className="mt-6">
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-[var(--border-soft)]" />
+              <span className="text-xs text-[var(--muted)]">or explore a demo</span>
+              <div className="h-px flex-1 bg-[var(--border-soft)]" />
+            </div>
+            <div className="grid grid-cols-3 gap-2 mt-3">
+              {DEMO_PERSONAS.map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => handleDemo(id)}
+                  disabled={demoLoading !== null}
+                  className="btn-secondary flex flex-col items-center gap-1.5 py-3 text-xs disabled:opacity-60"
+                >
+                  <Icon size={16} />
+                  {demoLoading === id ? "..." : `As ${label}`}
+                </button>
+              ))}
+            </div>
           </div>
 
           <p className="mt-6 text-sm text-center text-[var(--muted)]">

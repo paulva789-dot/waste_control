@@ -14,14 +14,12 @@ export default function PaymentModal({
   type,
   amountLabel,
   pickupId,
-  town,
   onClose,
   onSuccess,
 }: {
   type: PaymentType;
   amountLabel: string;
   pickupId?: string;
-  town?: string;
   onClose: () => void;
   onSuccess: () => void;
 }) {
@@ -36,7 +34,7 @@ export default function PaymentModal({
     setError("");
     setStep("processing");
     try {
-      const { data: payment } = await api.post("/payments/initiate", { type, provider, phone, pickupId, town });
+      const { data: payment } = await api.post("/payments/initiate", { type, provider, phone, pickupId });
       // Real aggregators confirm async via webhook after the user approves the USSD prompt.
       // We simulate that short wait, then poll our own confirm endpoint (stubbed) to settle it.
       await new Promise((r) => setTimeout(r, 1600));

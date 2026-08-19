@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { MessageSquareWarning } from "lucide-react";
+import { useState } from "react";
+import { MessageSquareWarning, Phone } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
@@ -16,32 +15,47 @@ const TYPES = [
   { value: "OTHER", label: "Other" },
 ];
 
+async function getLocation(fallback: { latitude?: number | null; longitude?: number | null }) {
+  if (typeof window !== "undefined" && navigator.geolocation) {
+    try {
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
+      );
+      return { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+    } catch {
+      // Location denied/unavailable — fall through to a fallback.
+    }
+  }
+  return {
+    latitude: fallback.latitude ?? 3.848 + (Math.random() - 0.5) * 0.02,
+    longitude: fallback.longitude ?? 11.502 + (Math.random() - 0.5) * 0.02,
+  };
+}
+
 export default function ComplaintsPage() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-  const [form, setForm] = useState({ type: "ILLEGAL_DUMPING", description: "" });
+  const { user } = useAuth();
+  const [form, setForm] = useState({ type: "ILLEGAL_DUMPING", description: "", reporterPhone: "" });
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
-
-  useEffect(() => {
-    if (!loading && !user) router.push("/login");
-  }, [loading, user, router]);
+  const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
+    setError("");
     try {
-      const latitude = user?.latitude ?? 3.848 + (Math.random() - 0.5) * 0.02;
-      const longitude = user?.longitude ?? 11.502 + (Math.random() - 0.5) * 0.02;
-      await api.post("/complaints", { ...form, latitude, longitude });
+      const { latitude, longitude } = await getLocation(user || {});
+      const payload: Record<string, unknown> = { type: form.type, description: form.description, latitude, longitude };
+      if (!user) payload.reporterPhone = form.reporterPhone;
+      await api.post("/complaints", payload);
       setDone(true);
-      setForm({ type: "ILLEGAL_DUMPING", description: "" });
+      setForm({ type: "ILLEGAL_DUMPING", description: "", reporterPhone: "" });
+    } catch (err: any) {
+      setError(err?.response?.data?.error || "Could not submit report. Please try again.");
     } finally {
       setSubmitting(false);
     }
   }
-
-  if (loading || !user) return null;
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
@@ -52,7 +66,7 @@ export default function ComplaintsPage() {
         </div>
         <h1 className="text-2xl font-bold">Report an issue</h1>
         <p className="text-sm text-[var(--muted)] mt-1">
-          Let the council know about illegal dumping, missed pickups, or bin problems.
+          Let the council know about illegal dumping, missed pickups, or bin problems — no account needed.
         </p>
 
         <div className="card p-6 mt-6">
@@ -87,9 +101,27 @@ export default function ComplaintsPage() {
                 placeholder="Describe what you observed, including any landmarks..."
               />
             </div>
+            {!user && (
+              <div>
+                <label className="text-sm font-medium flex items-center gap-1.5">
+                  <Phone size={14} className="text-brand" /> Phone number
+                </label>
+                <input
+                  required
+                  value={form.reporterPhone}
+                  onChange={(e) => setForm({ ...form, reporterPhone: e.target.value })}
+                  placeholder="6XXXXXXXX"
+                  className="input mt-1"
+                />
+                <p className="text-xs text-[var(--muted)] mt-1">
+                  Used only to send you status updates on this report. We won&apos;t use it for anything else.
+                </p>
+              </div>
+            )}
             <p className="text-xs text-[var(--muted)]">
               Your current location will be attached automatically to help field teams respond faster.
             </p>
+            {error && <p className="text-sm text-red-600">{error}</p>}
             <button type="submit" disabled={submitting} className="btn-primary w-full disabled:opacity-60">
               {submitting ? "Submitting..." : "Submit report"}
             </button>

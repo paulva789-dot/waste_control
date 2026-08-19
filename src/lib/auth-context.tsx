@@ -11,6 +11,7 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (data: { name: string; email: string; password: string; role: string; area?: string; town: string }) => Promise<void>;
+  demoLogin: (persona: "RESIDENT" | "DRIVER" | "COUNCIL") => Promise<void>;
   logout: () => void;
   updateSession: (token: string, user: AuthUser) => void;
 }
@@ -56,6 +57,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     routeByRole(res.data.user.role);
   }
 
+  async function demoLogin(persona: "RESIDENT" | "DRIVER" | "COUNCIL") {
+    const res = await api.post("/auth/demo-login", { persona });
+    persist(res.data.token, res.data.user);
+    routeByRole(res.data.user.role);
+  }
+
   function routeByRole(role: string) {
     const adminRoles = ["COUNCIL_ADMIN", "SYSTEM_ADMIN", "HYSACAM_SUPERVISOR", "INSPECTOR"];
     const fieldRoles = ["COLLECTOR", "HYSACAM_DRIVER"];
@@ -73,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout, updateSession: persist }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, demoLogin, logout, updateSession: persist }}>
       {children}
     </AuthContext.Provider>
   );

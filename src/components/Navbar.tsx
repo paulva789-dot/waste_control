@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, Sun, Moon, MapPin, CalendarDays, Crown, ClipboardList, UserCircle, LayoutDashboard } from "lucide-react";
+import { LogOut, Sun, Moon, MapPin, CalendarDays, Crown, ClipboardList, UserCircle, LayoutDashboard, MessageSquareWarning, Tag } from "lucide-react";
 import Logo from "./Logo";
 import NotificationBell from "./NotificationBell";
 import { useAuth } from "@/lib/auth-context";
@@ -35,19 +35,19 @@ export default function Navbar() {
           <Logo size={22} />
         </Link>
 
-        {user && (
-          <nav className="flex items-center gap-5">
-            {ADMIN_ROLES.includes(user.role) && navLink("/admin", "Overview", LayoutDashboard)}
-            {FIELD_ROLES.includes(user.role) && navLink("/jobs", "My jobs", ClipboardList)}
-            {!ADMIN_ROLES.includes(user.role) && !FIELD_ROLES.includes(user.role) && (
-              <>
-                {navLink("/dashboard", "Dashboard", LayoutDashboard)}
-                {navLink("/schedule", "Schedule", CalendarDays)}
-              </>
-            )}
-            {navLink("/map", "Map", MapPin)}
-          </nav>
-        )}
+        <nav className="flex items-center gap-5">
+          {user && ADMIN_ROLES.includes(user.role) && navLink("/admin", "Overview", LayoutDashboard)}
+          {user && FIELD_ROLES.includes(user.role) && navLink("/jobs", "My jobs", ClipboardList)}
+          {user && !ADMIN_ROLES.includes(user.role) && !FIELD_ROLES.includes(user.role) && (
+            <>
+              {navLink("/dashboard", "Dashboard", LayoutDashboard)}
+              {navLink("/schedule", "Schedule", CalendarDays)}
+            </>
+          )}
+          {user && navLink("/map", "Map", MapPin)}
+          {navLink("/complaints", "Report", MessageSquareWarning)}
+          {!user && navLink("/pricing", "Pricing", Tag)}
+        </nav>
 
         <div className="flex items-center gap-3">
           <button

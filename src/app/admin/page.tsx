@@ -28,6 +28,7 @@ import StatCard from "@/components/StatCard";
 import StatusBadge from "@/components/StatusBadge";
 import LiveMapClient from "@/components/LiveMapClient";
 import AssignPickupModal from "@/components/AssignPickupModal";
+import InviteStaffModal from "@/components/InviteStaffModal";
 import { useAuth } from "@/lib/auth-context";
 import { api, AnalyticsOverview, PickupRequest, Complaint, Vehicle } from "@/lib/api";
 import { getSocket } from "@/lib/socket";
@@ -47,6 +48,7 @@ export default function AdminPage() {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [search, setSearch] = useState("");
   const [assignTarget, setAssignTarget] = useState<PickupRequest | null>(null);
+  const [showInvite, setShowInvite] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || !ADMIN_ROLES.includes(user.role))) {
@@ -103,9 +105,16 @@ export default function AdminPage() {
     <div className="min-h-screen bg-[var(--background)]">
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 sm:px-6 py-8 space-y-8">
-        <div>
-          <h1 className="text-2xl font-bold">Council operations dashboard</h1>
-          <p className="text-[var(--muted)] text-sm mt-1">Live overview across all collection zones</p>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold">Council operations dashboard</h1>
+            <p className="text-[var(--muted)] text-sm mt-1">Live overview across all collection zones</p>
+          </div>
+          {CAN_ASSIGN_ROLES.includes(user.role) && (
+            <button onClick={() => setShowInvite(true)} className="btn-secondary flex items-center gap-2 text-sm">
+              <UserPlus size={15} /> Invite staff
+            </button>
+          )}
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -275,6 +284,7 @@ export default function AdminPage() {
           onAssigned={loadData}
         />
       )}
+      {showInvite && <InviteStaffModal onClose={() => setShowInvite(false)} onInvited={() => {}} />}
     </div>
   );
 }

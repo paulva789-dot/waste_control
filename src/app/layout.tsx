@@ -15,9 +15,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CleanCity DWMS — Digital Waste Management System",
+  title: {
+    default: "CleanCity — Know when your waste gets collected",
+    template: "%s · CleanCity",
+  },
   description:
-    "A unified platform for residents, collectors, HYSACAM and municipal councils to manage waste pickup, tracking, complaints and analytics.",
+    "CleanCity connects residents, waste collectors, HYSACAM and municipal councils around live pickup tracking, complaint reporting and analytics.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

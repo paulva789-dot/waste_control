@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, MapPin } from "lucide-react";
-import PaymentModal from "./PaymentModal";
-import { api, TOWN_CHANGE_FEE_XAF } from "@/lib/api";
+import { X, MapPin, CheckCircle2 } from "lucide-react";
+import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 
 export default function TownChangeModal({
   currentTown,
@@ -12,9 +12,12 @@ export default function TownChangeModal({
   currentTown?: string | null;
   onClose: () => void;
 }) {
+  const { token, updateSession } = useAuth();
   const [towns, setTowns] = useState<string[]>([]);
   const [town, setTown] = useState("");
-  const [confirming, setConfirming] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [done, setDone] = useState(false);
 
   useEffect(() => {
     api.get("/towns").then((r) => {
@@ -23,16 +26,19 @@ export default function TownChangeModal({
     });
   }, [currentTown]);
 
-  if (confirming) {
-    return (
-      <PaymentModal
-        type="TOWN_CHANGE"
-        town={town}
-        amountLabel={`${TOWN_CHANGE_FEE_XAF} XAF · change town to ${town}`}
-        onClose={onClose}
-        onSuccess={onClose}
-      />
-    );
+  async function submit() {
+    setSubmitting(true);
+    setError("");
+    try {
+      const { data: user } = await api.patch("/users/me/town", { town });
+      updateSession(token!, user);
+      setDone(true);
+      setTimeout(onClose, 900);
+    } catch (err: any) {
+      setError(err?.response?.data?.error || "Could not change town. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -41,27 +47,38 @@ export default function TownChangeModal({
         <button onClick={onClose} className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600 transition">
           <X size={20} />
         </button>
-        <div className="w-11 h-11 rounded-xl bg-brand-light text-brand-dark flex items-center justify-center mb-4">
-          <MapPin size={20} />
-        </div>
-        <h2 className="font-bold text-lg mb-1">Change your town</h2>
-        <p className="text-sm text-[var(--muted)] mb-5">
-          Current: <strong>{currentTown || "not set"}</strong>. Changing costs {TOWN_CHANGE_FEE_XAF} FCFA.
-        </p>
-        <select value={town} onChange={(e) => setTown(e.target.value)} className="input">
-          {towns.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-        <button
-          onClick={() => setConfirming(true)}
-          disabled={town === currentTown}
-          className="btn-primary w-full mt-4 disabled:opacity-50"
-        >
-          Pay {TOWN_CHANGE_FEE_XAF} FCFA & change
-        </button>
+
+        {done ? (
+          <div className="py-6 flex flex-col items-center gap-3 text-center animate-pop">
+            <CheckCircle2 className="text-brand" size={40} />
+            <p className="font-semibold">Town updated</p>
+          </div>
+        ) : (
+          <>
+            <div className="w-11 h-11 rounded-xl bg-brand-light text-brand-dark flex items-center justify-center mb-4">
+              <MapPin size={20} />
+            </div>
+            <h2 className="font-bold text-lg mb-1">Change your town</h2>
+            <p className="text-sm text-[var(--muted)] mb-5">
+              Current: <strong>{currentTown || "not set"}</strong>. This is free — you can change it again after 30 days.
+            </p>
+            <select value={town} onChange={(e) => setTown(e.target.value)} className="input">
+              {towns.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+            {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
+            <button
+              onClick={submit}
+              disabled={town === currentTown || submitting}
+              className="btn-primary w-full mt-4 disabled:opacity-50"
+            >
+              {submitting ? "Saving..." : "Save town"}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

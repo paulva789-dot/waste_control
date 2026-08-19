@@ -89,9 +89,11 @@ export interface Schedule {
   vehicle?: { plateNumber: string; driver?: { name: string } } | null;
 }
 
+// "PREMIUM_MEMBERSHIP" and "SPECIAL_PICKUP" are the initiable payment types.
+// "UNLOCK_TRACKING" too. "TOWN_CHANGE" only appears on historical payment
+// records — changing town is free now, see AuthContext.changeTown.
 export type PaymentType = "UNLOCK_TRACKING" | "PREMIUM_MEMBERSHIP" | "SPECIAL_PICKUP" | "TOWN_CHANGE";
 export type Provider = "MTN" | "ORANGE";
-export const TOWN_CHANGE_FEE_XAF = 3000;
 
 export interface Payment {
   id: string;
