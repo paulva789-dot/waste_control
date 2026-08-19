@@ -4,7 +4,7 @@ const STYLES: Record<string, string> = {
   IN_PROGRESS: "bg-blue-50 text-blue-700",
   COMPLETED: "bg-brand-light text-brand-dark",
   MISSED: "bg-red-50 text-red-700",
-  CANCELLED: "bg-neutral-100 text-neutral-600",
+  CANCELLED: "bg-[var(--border-soft)] text-[var(--muted)]",
   OPEN: "bg-amber-50 text-amber-700",
   IN_REVIEW: "bg-blue-50 text-blue-700",
   RESOLVED: "bg-brand-light text-brand-dark",
@@ -15,7 +15,7 @@ const STYLES: Record<string, string> = {
 
 export default function StatusBadge({ status }: { status: string }) {
   return (
-    <span className={`badge ${STYLES[status] || "bg-neutral-100 text-neutral-600"}`}>
+    <span className={`badge ${STYLES[status] || "bg-[var(--border-soft)] text-[var(--muted)]"}`}>
       {status.replace("_", " ")}
     </span>
   );

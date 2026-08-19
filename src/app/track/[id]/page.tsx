@@ -75,7 +75,7 @@ export default function TrackReportPage() {
                         {reached ? (
                           <CheckCircle2 size={18} className="text-brand shrink-0 mt-0.5" />
                         ) : (
-                          <Circle size={18} className="text-neutral-300 shrink-0 mt-0.5" />
+                          <Circle size={18} className="text-[var(--muted)] opacity-40 shrink-0 mt-0.5" />
                         )}
                         <div>
                           <p className={`text-sm font-medium ${reached ? "" : "text-[var(--muted)]"}`}>

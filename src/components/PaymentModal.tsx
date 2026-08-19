@@ -57,7 +57,7 @@ export default function PaymentModal({
       <div className="card w-full max-w-md p-6 animate-pop relative">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600 transition"
+          className="absolute top-4 right-4 text-[var(--muted)] hover:text-[var(--foreground)] transition"
         >
           <X size={20} />
         </button>
@@ -92,7 +92,7 @@ export default function PaymentModal({
               <div>
                 <label className="text-sm font-medium">Phone number</label>
                 <div className="relative mt-1">
-                  <Smartphone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                  <Smartphone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
                   <input
                     required
                     pattern="6[0-9]{8}"

@@ -61,7 +61,7 @@ export default function Navbar() {
           {user ? (
             <div className="flex items-center gap-4">
               {user.isPremium && (
-                <span className="badge bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                <span className="badge bg-amber-100 text-amber-700">
                   <Crown size={12} /> Premium
                 </span>
               )}

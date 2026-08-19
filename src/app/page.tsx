@@ -152,17 +152,17 @@ export default function Home() {
     <div className="min-h-screen">
       <Navbar />
 
-      <section className="relative overflow-hidden bg-gradient-to-b from-brand-light to-white">
+      <section className="relative overflow-hidden bg-gradient-to-b from-brand-light to-[var(--background)]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-20 sm:py-28 grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <span className="badge bg-white text-brand-dark border border-brand/20 mb-5">
+            <span className="badge bg-[var(--surface)] text-brand-dark border border-brand/20 mb-5">
               <Recycle size={14} /> Waste management platform
             </span>
             <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight tracking-tight text-[var(--foreground)]">
               Know exactly when your <span className="text-brand">waste gets collected</span>
             </h1>
             <p className="mt-3 text-brand-dark font-semibold italic">&ldquo;{TAGLINE}&rdquo;</p>
-            <p className="mt-5 text-lg text-neutral-600 max-w-xl">
+            <p className="mt-5 text-lg text-[var(--muted)] max-w-xl">
               One platform connecting residents, waste collectors, HYSACAM, and municipal councils —
               live vehicle tracking, pickup scheduling, complaint resolution, and analytics in a single dashboard.
             </p>
@@ -196,19 +196,19 @@ export default function Home() {
                   <Truck size={20} />
                 </span>
                 <div className="text-sm flex-1 min-w-0">
-                  <p className="font-semibold">Collector en route</p>
-                  <p className="text-[var(--muted)]">4 min away · General waste</p>
+                  <p className="font-semibold text-neutral-900">Collector en route</p>
+                  <p className="text-neutral-500">4 min away · General waste</p>
                 </div>
                 <StatusBadge status="IN_PROGRESS" />
               </div>
               <div className="rounded-lg bg-white/95 p-3 flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2 text-[var(--muted)]">
+                <span className="flex items-center gap-2 text-neutral-500">
                   <ClipboardList size={15} /> Last pickup
                 </span>
                 <StatusBadge status="COMPLETED" />
               </div>
               <div className="rounded-lg bg-white/95 p-3 flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2 text-[var(--muted)]">
+                <span className="flex items-center gap-2 text-neutral-500">
                   <MessageSquareWarning size={15} /> Open report
                 </span>
                 <StatusBadge status="IN_REVIEW" />
@@ -232,13 +232,13 @@ export default function Home() {
                 <Icon size={20} />
               </div>
               <h3 className="font-semibold">{title}</h3>
-              <p className="mt-1.5 text-sm text-neutral-600">{desc}</p>
+              <p className="mt-1.5 text-sm text-[var(--muted)]">{desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="bg-neutral-50 py-16">
+      <section className="bg-[var(--surface)] py-16">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <div className="text-center mb-10">
             <h2 className="text-2xl sm:text-3xl font-bold">Built for every side of the system</h2>
@@ -249,7 +249,9 @@ export default function Home() {
                 key={a.id}
                 onClick={() => setAudience(a.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition ${
-                  audience === a.id ? "bg-brand text-white" : "bg-white text-neutral-600 border border-neutral-200"
+                  audience === a.id
+                    ? "bg-brand text-white"
+                    : "bg-[var(--background)] text-[var(--muted)] border border-[var(--border-soft)]"
                 }`}
               >
                 <a.icon size={15} /> {a.label}
@@ -275,7 +277,7 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-20">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <h2 className="text-3xl font-bold">Everything the platform needs, connected</h2>
-          <p className="mt-3 text-neutral-600">
+          <p className="mt-3 text-[var(--muted)]">
             Built for real-time coordination between residents, field staff, and administrators.
           </p>
         </div>
@@ -286,7 +288,7 @@ export default function Home() {
                 <Icon size={22} />
               </div>
               <h3 className="font-semibold text-lg">{title}</h3>
-              <p className="mt-2 text-sm text-neutral-600">{desc}</p>
+              <p className="mt-2 text-sm text-[var(--muted)]">{desc}</p>
             </div>
           ))}
         </div>
@@ -314,7 +316,7 @@ export default function Home() {
                 {q}
                 <span className="text-brand shrink-0 transition group-open:rotate-45 text-xl leading-none">+</span>
               </summary>
-              <p className="mt-3 text-sm text-neutral-600">{a}</p>
+              <p className="mt-3 text-sm text-[var(--muted)]">{a}</p>
             </details>
           ))}
         </div>

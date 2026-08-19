@@ -206,7 +206,7 @@ export default function AdminPage() {
             <h2 className="font-semibold">All pickup requests</h2>
             <div className="flex flex-wrap items-center gap-3">
               <div className="relative w-56 max-w-full">
-                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
