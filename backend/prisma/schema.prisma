@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  RESIDENT
+  COLLECTOR
+  HYSACAM_DRIVER
+  HYSACAM_SUPERVISOR
+  COUNCIL_ADMIN
+  RECYCLING_COMPANY
+  INSPECTOR
+  SYSTEM_ADMIN
+}
+
+enum PickupStatus {
+  PENDING
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  MISSED
+  CANCELLED
+}
+
+enum ComplaintType {
+  ILLEGAL_DUMPING
+  MISSED_PICKUP
+  OVERFLOWING_BIN
+  DAMAGED_BIN
+  POOR_SERVICE
+  OTHER
+}
+
+enum ComplaintStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum PaymentType {
+  UNLOCK_TRACKING
+  PREMIUM_MEMBERSHIP
+  SPECIAL_PICKUP
+  TOWN_CHANGE
+}
+
+model User {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  phone         String?  @unique
+  passwordHash  String
+  role          Role     @default(RESIDENT)
+  avatarUrl     String?
+  area          String?
+  town          String?
+  pendingTown   String?
+  lastTownChangeAt DateTime?
+  latitude      Float?
+  longitude     Float?
+  isPremium     Boolean  @default(false)
+  premiumUntil  DateTime?
+  hasUnlockedTracking Boolean @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  pickupRequests   PickupRequest[]   @relation("ResidentPickups")
+  assignedPickups  PickupRequest[]   @relation("CollectorPickups")
+  complaints       Complaint[]       @relation("ComplaintReporter")
+  handledComplaints Complaint[]      @relation("ComplaintHandler")
+  vehicle          Vehicle?
+  notifications    Notification[]
+  payments         Payment[]
+}
+
+model Vehicle {
+  id           String   @id @default(uuid())
+  plateNumber  String   @unique
+  type         String   @default("Compactor Truck")
+  truckColor   String   @default("White")
+  town         String?
+  description  String?
+  capacityKg   Int      @default(5000)
+  latitude     Float?
+  longitude    Float?
+  heading      Float?
+  status       String   @default("IDLE")
+  driverId     String   @unique
+  driver       User     @relation(fields: [driverId], references: [id])
+  updatedAt    DateTime @updatedAt
+
+  schedules    Schedule[]
+}
+
+model Schedule {
+  id          String   @id @default(uuid())
+  area        String
+  dayOfWeek   Int
+  startTime   String
+  endTime     String
+  vehicleId   String?
+  vehicle     Vehicle? @relation(fields: [vehicleId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model PickupRequest {
+  id           String       @id @default(uuid())
+  residentId   String
+  resident     User         @relation("ResidentPickups", fields: [residentId], references: [id])
+  collectorId  String?
+  collector    User?        @relation("CollectorPickups", fields: [collectorId], references: [id])
+  wasteType    String       @default("General")
+  weightKg     Float?
+  address      String
+  latitude     Float
+  longitude    Float
+  status       PickupStatus @default(PENDING)
+  scheduledFor DateTime?
+  completedAt  DateTime?
+  notes        String?
+  isSpecial    Boolean      @default(false)
+  priceXAF     Int?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // Proof of service — captured by the collector at the moment a pickup is
+  // marked complete, so "the truck came" is provable rather than contested.
+  completionPhotoUrl String?
+  completionLatitude  Float?
+  completionLongitude Float?
+  binCount            Int?
+}
+
+model Complaint {
+  id           String          @id @default(uuid())
+  reporterId   String?
+  reporter     User?           @relation("ComplaintReporter", fields: [reporterId], references: [id])
+  reporterPhone String?
+  handlerId    String?
+  handler      User?           @relation("ComplaintHandler", fields: [handlerId], references: [id])
+  type         ComplaintType
+  description  String
+  photoUrl     String?
+  latitude     Float?
+  longitude    Float?
+  status       ComplaintStatus @default(OPEN)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  statusEvents ComplaintStatusEvent[]
+}
+
+// One row per status transition, so a complaint has a real timeline
+// (received → assigned → in progress → resolved) rather than a single
+// status field that overwrites its own history.
+model ComplaintStatusEvent {
+  id          String          @id @default(uuid())
+  complaintId String
+  complaint   Complaint       @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  status      ComplaintStatus
+  createdAt   DateTime        @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  amountXAF     Int
+  provider      String
+  type          PaymentType   @default(UNLOCK_TRACKING)
+  phone         String?
+  status        PaymentStatus @default(PENDING)
+  reference     String        @unique
+  createdAt     DateTime      @default(now())
+}
+
+model RecyclingStat {
+  id          String   @id @default(uuid())
+  area        String
+  material    String
+  quantityKg  Float
+  recordedAt  DateTime @default(now())
+}
