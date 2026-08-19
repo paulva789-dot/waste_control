@@ -15,8 +15,8 @@ export default function DriverCard({ vehicle }: { vehicle: Vehicle }) {
   if (vehicle.locked) {
     return (
       <div className="card p-4 flex items-center gap-3 opacity-70">
-        <div className="w-11 h-11 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center">
-          <Lock size={18} className="text-neutral-400" />
+        <div className="w-11 h-11 rounded-full bg-[var(--border-soft)] flex items-center justify-center">
+          <Lock size={18} className="text-[var(--muted)]" />
         </div>
         <div>
           <p className="text-sm font-semibold">{vehicle.type}</p>
