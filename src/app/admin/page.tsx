@@ -8,6 +8,8 @@ import {
   PackageCheck,
   Percent,
   Recycle,
+  Search,
+  UserPlus,
 } from "lucide-react";
 import {
   BarChart,
@@ -25,12 +27,15 @@ import Navbar from "@/components/Navbar";
 import StatCard from "@/components/StatCard";
 import StatusBadge from "@/components/StatusBadge";
 import LiveMapClient from "@/components/LiveMapClient";
+import AssignPickupModal from "@/components/AssignPickupModal";
 import { useAuth } from "@/lib/auth-context";
 import { api, AnalyticsOverview, PickupRequest, Complaint, Vehicle } from "@/lib/api";
 import { getSocket } from "@/lib/socket";
 
 const ADMIN_ROLES = ["COUNCIL_ADMIN", "SYSTEM_ADMIN", "HYSACAM_SUPERVISOR", "INSPECTOR"];
+const CAN_ASSIGN_ROLES = ["COUNCIL_ADMIN", "SYSTEM_ADMIN", "HYSACAM_SUPERVISOR"];
 const PIE_COLORS = ["#1a9e5c", "#2563eb", "#f59e0b", "#dc2626", "#7c3aed"];
+const STATUS_FILTERS = ["ALL", "PENDING", "SCHEDULED", "IN_PROGRESS", "COMPLETED", "MISSED", "CANCELLED"];
 
 export default function AdminPage() {
   const { user, loading } = useAuth();
@@ -39,6 +44,9 @@ export default function AdminPage() {
   const [pickups, setPickups] = useState<PickupRequest[]>([]);
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [search, setSearch] = useState("");
+  const [assignTarget, setAssignTarget] = useState<PickupRequest | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || !ADMIN_ROLES.includes(user.role))) {
@@ -182,7 +190,33 @@ export default function AdminPage() {
         </div>
 
         <div className="card p-5">
-          <h2 className="font-semibold mb-4">All pickup requests</h2>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <h2 className="font-semibold">All pickup requests</h2>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="relative w-56 max-w-full">
+                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search resident or address..."
+                  className="input pl-8 py-1.5 text-sm"
+                />
+              </div>
+              <div className="w-44 max-w-full">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="input py-1.5 text-sm"
+                >
+                  {STATUS_FILTERS.map((s) => (
+                    <option key={s} value={s}>
+                      {s === "ALL" ? "All statuses" : s.replace("_", " ")}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -192,25 +226,55 @@ export default function AdminPage() {
                   <th className="py-2 pr-4">Address</th>
                   <th className="py-2 pr-4">Collector</th>
                   <th className="py-2 pr-4">Status</th>
+                  {CAN_ASSIGN_ROLES.includes(user.role) && <th className="py-2 pr-4"></th>}
                 </tr>
               </thead>
               <tbody>
-                {pickups.map((p) => (
-                  <tr key={p.id} className="border-b border-neutral-50 last:border-0">
-                    <td className="py-2.5 pr-4">{p.resident?.name}</td>
-                    <td className="py-2.5 pr-4">{p.wasteType}</td>
-                    <td className="py-2.5 pr-4 text-[var(--muted)]">{p.address}</td>
-                    <td className="py-2.5 pr-4 text-[var(--muted)]">{p.collector?.name || "Unassigned"}</td>
-                    <td className="py-2.5 pr-4">
-                      <StatusBadge status={p.status} />
-                    </td>
-                  </tr>
-                ))}
+                {pickups
+                  .filter((p) => statusFilter === "ALL" || p.status === statusFilter)
+                  .filter((p) => {
+                    const q = search.trim().toLowerCase();
+                    if (!q) return true;
+                    return (
+                      p.resident?.name?.toLowerCase().includes(q) || p.address.toLowerCase().includes(q)
+                    );
+                  })
+                  .map((p) => (
+                    <tr key={p.id} className="border-b border-neutral-50 last:border-0">
+                      <td className="py-2.5 pr-4">{p.resident?.name}</td>
+                      <td className="py-2.5 pr-4">{p.wasteType}</td>
+                      <td className="py-2.5 pr-4 text-[var(--muted)]">{p.address}</td>
+                      <td className="py-2.5 pr-4 text-[var(--muted)]">{p.collector?.name || "Unassigned"}</td>
+                      <td className="py-2.5 pr-4">
+                        <StatusBadge status={p.status} />
+                      </td>
+                      {CAN_ASSIGN_ROLES.includes(user.role) && (
+                        <td className="py-2.5 pr-4">
+                          {p.status === "PENDING" && (
+                            <button
+                              onClick={() => setAssignTarget(p)}
+                              className="text-xs font-semibold text-brand-dark hover:underline flex items-center gap-1"
+                            >
+                              <UserPlus size={13} /> Assign
+                            </button>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
         </div>
       </main>
+
+      {assignTarget && (
+        <AssignPickupModal
+          pickup={assignTarget}
+          onClose={() => setAssignTarget(null)}
+          onAssigned={loadData}
+        />
+      )}
     </div>
   );
 }

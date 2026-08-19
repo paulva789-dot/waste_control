@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { api, AuthUser } from "./api";
+import { identify } from "./socket";
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -32,6 +33,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
+  useEffect(() => {
+    if (user) identify(user.id);
+  }, [user]);
+
   function persist(token: string, user: AuthUser) {
     localStorage.setItem("dwms_token", token);
     localStorage.setItem("dwms_user", JSON.stringify(user));
@@ -53,7 +58,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   function routeByRole(role: string) {
     const adminRoles = ["COUNCIL_ADMIN", "SYSTEM_ADMIN", "HYSACAM_SUPERVISOR", "INSPECTOR"];
-    router.push(adminRoles.includes(role) ? "/admin" : "/dashboard");
+    const fieldRoles = ["COLLECTOR", "HYSACAM_DRIVER"];
+    if (adminRoles.includes(role)) return router.push("/admin");
+    if (fieldRoles.includes(role)) return router.push("/jobs");
+    router.push("/dashboard");
   }
 
   function logout() {

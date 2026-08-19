@@ -9,6 +9,8 @@ const STYLES: Record<string, string> = {
   IN_REVIEW: "bg-blue-50 text-blue-700",
   RESOLVED: "bg-brand-light text-brand-dark",
   REJECTED: "bg-red-50 text-red-700",
+  SUCCESS: "bg-brand-light text-brand-dark",
+  FAILED: "bg-red-50 text-red-700",
 };
 
 export default function StatusBadge({ status }: { status: string }) {

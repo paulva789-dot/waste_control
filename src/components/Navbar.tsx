@@ -2,10 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, Bell, Sun, Moon, MapPin, CalendarDays, Crown } from "lucide-react";
+import { LogOut, Sun, Moon, MapPin, CalendarDays, Crown, ClipboardList, UserCircle, LayoutDashboard } from "lucide-react";
 import Logo from "./Logo";
+import NotificationBell from "./NotificationBell";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
+
+const ADMIN_ROLES = ["COUNCIL_ADMIN", "SYSTEM_ADMIN", "HYSACAM_SUPERVISOR", "INSPECTOR"];
+const FIELD_ROLES = ["COLLECTOR", "HYSACAM_DRIVER"];
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -33,8 +37,14 @@ export default function Navbar() {
 
         {user && (
           <nav className="flex items-center gap-5">
-            {navLink("/dashboard", "Dashboard", Bell)}
-            {navLink("/schedule", "Schedule", CalendarDays)}
+            {ADMIN_ROLES.includes(user.role) && navLink("/admin", "Overview", LayoutDashboard)}
+            {FIELD_ROLES.includes(user.role) && navLink("/jobs", "My jobs", ClipboardList)}
+            {!ADMIN_ROLES.includes(user.role) && !FIELD_ROLES.includes(user.role) && (
+              <>
+                {navLink("/dashboard", "Dashboard", LayoutDashboard)}
+                {navLink("/schedule", "Schedule", CalendarDays)}
+              </>
+            )}
             {navLink("/map", "Map", MapPin)}
           </nav>
         )}
@@ -55,13 +65,17 @@ export default function Navbar() {
                   <Crown size={12} /> Premium
                 </span>
               )}
-              <button className="relative text-[var(--muted)] hover:text-brand-dark transition">
-                <Bell size={20} />
-              </button>
-              <div className="hidden sm:block text-right">
-                <p className="text-sm font-semibold leading-none">{user.name}</p>
-                <p className="text-xs text-[var(--muted)] mt-0.5">{user.role.replace(/_/g, " ")}</p>
-              </div>
+              <NotificationBell />
+              <Link href="/profile" className="hidden sm:flex items-center gap-2 group">
+                <div className="text-right">
+                  <p className="text-sm font-semibold leading-none group-hover:text-brand-dark transition">{user.name}</p>
+                  <p className="text-xs text-[var(--muted)] mt-0.5">{user.role.replace(/_/g, " ")}</p>
+                </div>
+                <UserCircle size={28} className="text-[var(--muted)] group-hover:text-brand-dark transition" />
+              </Link>
+              <Link href="/profile" className="sm:hidden text-[var(--muted)] hover:text-brand-dark transition">
+                <UserCircle size={22} />
+              </Link>
               <button
                 onClick={logout}
                 className="flex items-center gap-1.5 text-sm font-medium text-[var(--muted)] hover:text-red-600 transition"

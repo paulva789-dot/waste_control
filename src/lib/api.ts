@@ -30,6 +30,7 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
+  phone?: string | null;
   role: Role;
   area?: string | null;
   town?: string | null;
@@ -112,6 +113,14 @@ export interface PriceQuote {
 }
 
 export const UNLOCK_FEE_XAF = 1500;
+
+export interface AppNotification {
+  id: string;
+  title: string;
+  body: string;
+  read: boolean;
+  createdAt: string;
+}
 
 export interface AnalyticsOverview {
   totalPickups: number;

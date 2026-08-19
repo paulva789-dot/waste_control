@@ -9,3 +9,12 @@ export function getSocket(): Socket {
   }
   return socket;
 }
+
+export function identify(userId: string) {
+  const s = getSocket();
+  if (s.connected) {
+    s.emit("identify", userId);
+  } else {
+    s.once("connect", () => s.emit("identify", userId));
+  }
+}
